@@ -7,60 +7,73 @@ datasource db {
   url      = env("DATABASE_URL")
 }
 
-model attendance {
-  attendance_id     Int     @id
-  student_id        Int?
-  lesson_id         Int?
-  attendance_status String? @db.VarChar(50)
+enum AttendanceStatus {
+  ABSENT
+  PRESENT
+  LATE
+}
+
+model Attendance {
+  attendance_id     String           @id @default(cuid())
+  student_id        Int
+  lesson_id         Int
+  attendance_status AttendanceStatus
   comment           String?
-  lesson            lesson? @relation(fields: [lesson_id], references: [lesson_id], onDelete: NoAction, onUpdate: NoAction)
+  student           Student          @relation(fields: [student_id], references: [student_id], onDelete: NoAction, onUpdate: NoAction)
+  lesson            Lesson           @relation(fields: [lesson_id], references: [lesson_id], onDelete: NoAction, onUpdate: NoAction)
 }
 
-model faculty {
-  faculty_id   Int       @id
-  faculty_name String?   @db.VarChar(255)
-  grup         grup[]
-  subject      subject[]
-  teacher      teacher[]
+model Faculty {
+  faculty_id   String    @id @default(cuid())
+  faculty_name String    @db.VarChar(255)
+  group        Group[]
+  subject      Subject[]
+  teacher      Teacher[]
 }
 
-model grup {
-  group_id   Int      @id
-  faculty_id Int?
-  faculty    faculty? @relation(fields: [faculty_id], references: [faculty_id], onDelete: NoAction, onUpdate: NoAction)
+model Group {
+  group_id   Int       @id
+  faculty_id String
+  students   Student[]
+  faculty    Faculty   @relation(fields: [faculty_id], references: [faculty_id], onDelete: NoAction, onUpdate: NoAction)
 }
 
-model lesson {
+model Lesson {
   lesson_id    Int          @id
-  subject_id   Int?
-  date         DateTime?    @db.Date
-  start_time   DateTime?    @db.Time(6)
-  end_time     DateTime?    @db.Time(6)
-  group_number Int?
-  teacher_id   Int?
-  attendance   attendance[]
-  subject      subject?     @relation(fields: [subject_id], references: [subject_id], onDelete: NoAction, onUpdate: NoAction)
-  teacher      teacher?     @relation(fields: [teacher_id], references: [teacher_id], onDelete: NoAction, onUpdate: NoAction)
+  subject_id   Int
+  date         DateTime     @db.Date
+  start_time   DateTime     @db.Time(6)
+  end_time     DateTime     @db.Time(6)
+  group_number Int
+  teacher_id   Int
+  attendance   Attendance[]
+  subject      Subject      @relation(fields: [subject_id], references: [subject_id], onDelete: NoAction, onUpdate: NoAction)
+  teacher      Teacher      @relation(fields: [teacher_id], references: [teacher_id], onDelete: NoAction, onUpdate: NoAction)
 }
 
-model student {
-  student_id   Int     @id
-  student_name String? @db.VarChar(255)
-  group_id     Int?
+model Student {
+  student_id   Int          @id
+  student_name String       @db.VarChar(255)
+  group_id     Int
+  Attendance   Attendance[]
+  Group        Group        @relation(fields: [group_id], references: [group_id])
 }
 
-model subject {
-  subject_id   Int      @id
-  subject_name String?  @db.VarChar(255)
-  faculty_id   Int?
-  lesson       lesson[]
-  faculty      faculty? @relation(fields: [faculty_id], references: [faculty_id], onDelete: NoAction, onUpdate: NoAction)
+model Subject {
+  subject_id        Int      @id
+  subject_name      String?  @db.VarChar(255)
+  faculty_id        String
+  teacher_id        Int
+  lesson            Lesson[]
+  faculty           Faculty  @relation(fields: [faculty_id], references: [faculty_id], onDelete: NoAction, onUpdate: NoAction)
+  Teacher           Teacher? @relation(fields: [teacher_id], references: [teacher_id])
 }
 
-model teacher {
-  teacher_id   Int      @id
-  teacher_name String?  @db.VarChar(255)
-  faculty_id   Int?
-  lesson       lesson[]
-  faculty      faculty? @relation(fields: [faculty_id], references: [faculty_id], onDelete: NoAction, onUpdate: NoAction)
+model Teacher {
+  teacher_id   Int       @id
+  teacher_name String    @db.VarChar(255)
+  faculty_id   String
+  lessons      Lesson[]
+  subjects     Subject[]
+  faculty      Faculty?  @relation(fields: [faculty_id], references: [faculty_id], onDelete: NoAction, onUpdate: NoAction)
 }
