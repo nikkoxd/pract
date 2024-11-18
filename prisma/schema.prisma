@@ -7,6 +7,20 @@ datasource db {
   url      = env("DATABASE_URL")
 }
 
+enum UserRole {
+  ADMIN
+  TEACHER
+}
+
+model User {
+  id         String   @id @default(cuid())
+  email      String   @unique
+  password   String
+  role       UserRole
+  teacher_id String?
+  teacher    Teacher? @relation(fields: [teacher_id], references: [teacher_id])
+}
+
 enum AttendanceStatus {
   ABSENT
   PRESENT
@@ -45,10 +59,10 @@ model Lesson {
   start_time   DateTime     @db.Time(6)
   end_time     DateTime     @db.Time(6)
   group_number Int
-  teacher_id   Int
+  teacher_id   String
   attendance   Attendance[]
-  subject      Subject      @relation(fields: [subject_id], references: [subject_id], onDelete: NoAction, onUpdate: NoAction)
-  teacher      Teacher      @relation(fields: [teacher_id], references: [teacher_id], onDelete: NoAction, onUpdate: NoAction)
+  Subject      Subject      @relation(fields: [subject_id], references: [subject_id], onDelete: NoAction, onUpdate: NoAction)
+  Teacher      Teacher      @relation(fields: [teacher_id], references: [teacher_id], onDelete: NoAction, onUpdate: NoAction)
 }
 
 model Student {
@@ -60,20 +74,21 @@ model Student {
 }
 
 model Subject {
-  subject_id        Int      @id
-  subject_name      String?  @db.VarChar(255)
-  faculty_id        String
-  teacher_id        Int
-  lesson            Lesson[]
-  faculty           Faculty  @relation(fields: [faculty_id], references: [faculty_id], onDelete: NoAction, onUpdate: NoAction)
-  Teacher           Teacher? @relation(fields: [teacher_id], references: [teacher_id])
+  subject_id   Int      @id
+  subject_name String?  @db.VarChar(255)
+  faculty_id   String
+  teacher_id   String
+  lesson       Lesson[]
+  faculty      Faculty  @relation(fields: [faculty_id], references: [faculty_id], onDelete: NoAction, onUpdate: NoAction)
+  teacher      Teacher? @relation(fields: [teacher_id], references: [teacher_id])
 }
 
 model Teacher {
-  teacher_id   Int       @id
+  teacher_id   String    @id @default(cuid())
   teacher_name String    @db.VarChar(255)
   faculty_id   String
   lessons      Lesson[]
   subjects     Subject[]
   faculty      Faculty?  @relation(fields: [faculty_id], references: [faculty_id], onDelete: NoAction, onUpdate: NoAction)
+  User         User[]
 }
