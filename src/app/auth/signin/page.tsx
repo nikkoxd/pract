@@ -1,6 +1,6 @@
 import Link from "next/link"
 
-export default function Login() {
+export default function SignIn() {
   return (
     <main className="h-screen flex items-center justify-center">
       <section className="bg-gray-800 p-5 rounded-lg">

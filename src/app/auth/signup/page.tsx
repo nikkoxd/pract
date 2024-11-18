@@ -1,6 +1,6 @@
 import Link from "next/link"
 
-export default function Register() {
+export default function SignUp() {
   return (
     <main className="h-screen flex items-center justify-center">
       <section className="bg-gray-800 p-5 rounded-lg">
