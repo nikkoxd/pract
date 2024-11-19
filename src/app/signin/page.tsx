@@ -1,11 +1,10 @@
 import Link from "next/link"
-import getServerSession from "next-auth"
+import { getServerSession } from "next-auth"
 import SignInForm from "./SignInForm"
 import { redirect } from "next/navigation";
-import { authOptions } from "@/lib/auth";
 
-export default async function SignUp() {
-  const session = getServerSession(authOptions);
+export default async function SignIn() {
+  const session = await getServerSession();
 
   if (session) {
     redirect("/")

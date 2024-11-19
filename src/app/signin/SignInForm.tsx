@@ -4,6 +4,8 @@ import { useForm } from "react-hook-form"
 import { zodResolver } from "@hookform/resolvers/zod"
 import { z } from "zod"
 import FormField from "../components/FormField"
+import { signIn } from "next-auth/react"
+import { useRouter } from "next/navigation"
 
 const FormSchema = z.object({
   email: z.string().email(),
@@ -13,6 +15,8 @@ const FormSchema = z.object({
 type FormData = z.infer<typeof FormSchema>
 
 export default function SignInForm() {
+  const router = useRouter();
+
   const { register, handleSubmit, formState: { errors } } = useForm({
     resolver: zodResolver(FormSchema),
     defaultValues: {
@@ -23,6 +27,30 @@ export default function SignInForm() {
 
   const onSubmit = async (data: FormData) => {
     console.log("Submitting form", data);
+
+    const { email, password } = data;
+
+    try {
+      const response = await signIn("credentials", {
+        email,
+        password,
+        redirect: false,
+      })
+      console.log(response);
+
+      if (!response?.error) {
+        router.push("/");
+        router.refresh();
+      }
+
+      if (!response?.ok) {
+        throw new Error("Network response was not ok");
+      }
+
+      console.log("Sign In Successful", response);
+    } catch (error) {
+      console.error("Sign In Failed:", error);
+    }
   };
 
   return (
