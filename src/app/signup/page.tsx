@@ -1,9 +1,15 @@
-"use client"
-
 import Link from "next/link"
 import SignUpForm from "./SignUpForm"
+import { getServerSession } from "next-auth";
+import { redirect } from "next/navigation";
 
-export default function SignUp() {
+export default async function SignUp() {
+  const session = await getServerSession();
+
+  if (session) {
+    redirect("/")
+  }
+
   return (
     <main className="h-screen flex items-center justify-center">
       <section className="bg-gray-100 dark:bg-gray-800 p-5 rounded-lg">
