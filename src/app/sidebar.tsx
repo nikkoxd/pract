@@ -9,10 +9,10 @@ export default function Sidebar() {
       </div>
       <ul className="list-decimal list-inside">
         <li>
-          <Link href="/" className="text-blue-500">Базы данных - Б22-191-1</Link>
+          <Link href="/" className="text-blue-500 hover:underline">Базы данных - Б22-191-1</Link>
         </li>
         <li>
-          <Link href="/" className="text-blue-500">Операционные системы - Б22-191-1</Link>
+          <Link href="/" className="text-blue-500 hover:underline">Операционные системы - Б22-191-1</Link>
         </li>
       </ul>
     </section>
