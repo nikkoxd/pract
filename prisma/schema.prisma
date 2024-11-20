@@ -13,12 +13,11 @@ enum UserRole {
 }
 
 model User {
-  id         String   @id @default(cuid())
-  email      String   @unique
-  password   String
-  role       UserRole
-  teacher_id String?
-  teacher    Teacher? @relation(fields: [teacher_id], references: [teacher_id])
+  id       String   @id @default(cuid())
+  email    String   @unique
+  password String
+  role     UserRole
+  Teacher  Teacher?
 }
 
 enum AttendanceStatus {
@@ -85,10 +84,11 @@ model Subject {
 
 model Teacher {
   teacher_id   String    @id @default(cuid())
+  email        String    @unique
   teacher_name String    @db.VarChar(255)
   faculty_id   String
   lessons      Lesson[]
   subjects     Subject[]
   faculty      Faculty?  @relation(fields: [faculty_id], references: [faculty_id], onDelete: NoAction, onUpdate: NoAction)
-  User         User[]
+  user         User?     @relation(fields: [email], references: [email], onDelete: NoAction, onUpdate: NoAction)
 }
