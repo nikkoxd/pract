@@ -4,6 +4,7 @@ import { useForm } from "react-hook-form"
 import { zodResolver } from "@hookform/resolvers/zod"
 import { z } from "zod"
 import FormField from "../components/FormField"
+import { useRouter } from "next/navigation"
 
 const FormSchema = z.object({
   email: z.string().email(),
@@ -13,6 +14,8 @@ const FormSchema = z.object({
 type FormData = z.infer<typeof FormSchema>
 
 export default function SignUp() {
+  const router = useRouter();
+
   const { register, handleSubmit, formState: { errors } } = useForm({
     resolver: zodResolver(FormSchema),
     defaultValues: {
@@ -38,7 +41,8 @@ export default function SignUp() {
         throw new Error("Network response was not ok");
       }
       // Process response here
-      console.log("Registration Successful", response);
+      router.push("/signin");
+      router.refresh();
     } catch (error) {
       console.error("Registration Failed:", error);
     }
