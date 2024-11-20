@@ -1,9 +1,17 @@
+import { getServerSession } from "next-auth";
 import TableCell from "./components/TableCell";
 import TableHeader from "./components/TableHeader";
 import Header from "./header";
 import Sidebar from "./sidebar";
+import { redirect } from "next/navigation";
 
-export default function Home() {
+export default async function Home() {
+  const session = await getServerSession();
+
+  if (!session) {
+    redirect("/signin");
+  }
+
   return (
     <>
       <Header />
