@@ -1,15 +1,14 @@
 import Link from "next/link";
+import { getServerSession } from "next-auth";
+import UserInfo from "./components/UserInfo";
 
-export default function Header() {
+export default async function Header() {
+  const session = await getServerSession();
+
   return (
     <header className="container mx-auto py-4 flex items-center justify-between">
-      <div>
-        <Link href="/" className="font-bold">Электронный журнал посещаемости</Link>
-      </div>
-      <div className="flex items-center gap-2">
-        <p>Иванов Иван Иванович</p>
-        <Link href="/signin" className="text-blue-500 hover:underline">Выйти</Link>
-      </div>
+      <Link href="/" className="font-bold">Электронный журнал посещаемости</Link>
+      <UserInfo session={session} />
     </header>
   );
 }
