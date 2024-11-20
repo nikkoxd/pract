@@ -5,8 +5,7 @@ import prisma from "@/lib/prisma";
 export async function POST(request: Request) {
   try {
     const { email, password } = await request.json();
-
-    console.log({ email, password });
+    console.log("Received signup request with email and password.");
 
     const hashedPassword = await bcrypt.hash(password, 10);
 
