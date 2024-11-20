@@ -53,7 +53,7 @@ model Group {
 
 model Lesson {
   lesson_id    Int          @id
-  subject_id   Int
+  subject_id   String
   date         DateTime     @db.Date
   start_time   DateTime     @db.Time(6)
   end_time     DateTime     @db.Time(6)
@@ -73,13 +73,13 @@ model Student {
 }
 
 model Subject {
-  subject_id   Int      @id
-  subject_name String?  @db.VarChar(255)
+  subject_id   String   @id @default(cuid())
+  subject_name String   @db.VarChar(255)
   faculty_id   String
   teacher_id   String
   lesson       Lesson[]
   faculty      Faculty  @relation(fields: [faculty_id], references: [faculty_id], onDelete: NoAction, onUpdate: NoAction)
-  teacher      Teacher? @relation(fields: [teacher_id], references: [teacher_id])
+  teacher      Teacher  @relation(fields: [teacher_id], references: [teacher_id])
 }
 
 model Teacher {
@@ -89,6 +89,6 @@ model Teacher {
   faculty_id   String
   lessons      Lesson[]
   subjects     Subject[]
-  faculty      Faculty?  @relation(fields: [faculty_id], references: [faculty_id], onDelete: NoAction, onUpdate: NoAction)
-  user         User?     @relation(fields: [email], references: [email], onDelete: NoAction, onUpdate: NoAction)
+  faculty      Faculty   @relation(fields: [faculty_id], references: [faculty_id], onDelete: NoAction, onUpdate: NoAction)
+  user         User      @relation(fields: [email], references: [email], onDelete: NoAction, onUpdate: NoAction)
 }
