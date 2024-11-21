@@ -1,5 +1,5 @@
-export default function TableCell({ children, status, isCurrentDate }:
-  { children?: React.ReactNode, status?: string, isCurrentDate?: boolean }) {
+export default function TableCell({ children, status, isCurrentDate, onChange, attendanceId }:
+  { children?: React.ReactNode, status?: string, isCurrentDate?: boolean, onChange?: (_newStatus: string, _attendanceId: string) => void, attendanceId?: string }) {
   let cellClass = "p-2 border-b border-gray-300 dark:border-gray-700 text-left";
 
   if (status) {
@@ -33,7 +33,20 @@ export default function TableCell({ children, status, isCurrentDate }:
 
   return (
     <td className={cellClass}>
-      {children}
+      {isCurrentDate ? (
+        <select
+          value={status}
+          onChange={(e) => onChange && onChange(e.target.value, attendanceId!)}
+          className="p-1 bg-transparent"
+        >
+          <option value="PRESENT">Присутствует</option>
+          <option value="ABSENT">Отсутствует</option>
+          <option value="LATE">Опоздал</option>
+        </select>
+      ) : (
+        children
+      )}
     </td>
   );
 }
+

@@ -5,6 +5,7 @@ import DateInput from "./components/DateInput";
 import LessonsList from "./components/LessonsList";
 import { redirect } from "next/navigation";
 import StudentsTable from "./components/StudentsTable";
+import { $Enums } from "@prisma/client";
 
 async function getTeacher(session: Session) {
   if (!session.user?.email) return;
@@ -102,6 +103,15 @@ async function getAttendancesForGroup(groupId: string) {
   return attendances;
 }
 
+async function updateAttendanceStatusAction(attendanceId: string, newStatus: string) {
+  "use server";
+
+  await prisma.attendance.update({
+    where: { attendance_id: attendanceId },
+    data: { attendance_status: newStatus as $Enums.AttendanceStatus },
+  });
+}
+
 export default async function Home(
   props: {
     searchParams?: Promise<{ [key: string]: string | string[] | undefined }>
@@ -131,7 +141,12 @@ export default async function Home(
           </div>
           <LessonsList lessons={lessons} />
         </section>
-        <StudentsTable lesson={lesson} attendances={attendances} selectedDate={selectedDate} />
+        <StudentsTable
+          lesson={lesson}
+          attendances={attendances}
+          selectedDate={selectedDate}
+          updateAttendanceStatusAction={updateAttendanceStatusAction}
+        />
       </main>
     </>
   );
