@@ -38,9 +38,6 @@ async function getLessons(session: Session, date: Date) {
     }
   });
 
-  console.log(date);
-  console.log(lessons);
-
   return lessons;
 }
 
