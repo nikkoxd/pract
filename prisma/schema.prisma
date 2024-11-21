@@ -7,88 +7,89 @@ datasource db {
   url      = env("DATABASE_URL")
 }
 
-enum UserRole {
-  ADMIN
-  TEACHER
-}
-
 model User {
-  id         String   @id @default(cuid())
-  email      String   @unique
-  password   String
-  role       UserRole
-  teacher_id String?
-  teacher    Teacher? @relation(fields: [teacher_id], references: [teacher_id])
-}
-
-enum AttendanceStatus {
-  ABSENT
-  PRESENT
-  LATE
+  id       String   @id @default(cuid())
+  email    String   @unique
+  password String
+  role     UserRole
+  Teacher  Teacher?
 }
 
 model Attendance {
   attendance_id     String           @id @default(cuid())
-  student_id        Int
-  lesson_id         Int
+  student_id        String
+  lesson_id         String
   attendance_status AttendanceStatus
   comment           String?
-  student           Student          @relation(fields: [student_id], references: [student_id], onDelete: NoAction, onUpdate: NoAction)
   lesson            Lesson           @relation(fields: [lesson_id], references: [lesson_id], onDelete: NoAction, onUpdate: NoAction)
+  student           Student          @relation(fields: [student_id], references: [student_id], onDelete: NoAction, onUpdate: NoAction)
 }
 
 model Faculty {
   faculty_id   String    @id @default(cuid())
   faculty_name String    @db.VarChar(255)
   group        Group[]
-  subject      Subject[]
+  subjects     Subject[]
   teacher      Teacher[]
 }
 
 model Group {
-  group_id   Int       @id
+  group_id   String    @id @default(cuid())
+  group_name String?   @db.VarChar(255)
   faculty_id String
-  students   Student[]
   faculty    Faculty   @relation(fields: [faculty_id], references: [faculty_id], onDelete: NoAction, onUpdate: NoAction)
+  students   Student[]
+  lessons    Lesson[]
 }
 
 model Lesson {
-  lesson_id    Int          @id
-  subject_id   Int
-  date         DateTime     @db.Date
-  start_time   DateTime     @db.Time(6)
-  end_time     DateTime     @db.Time(6)
-  group_number Int
-  teacher_id   String
-  attendance   Attendance[]
-  Subject      Subject      @relation(fields: [subject_id], references: [subject_id], onDelete: NoAction, onUpdate: NoAction)
-  Teacher      Teacher      @relation(fields: [teacher_id], references: [teacher_id], onDelete: NoAction, onUpdate: NoAction)
+  lesson_id  String       @id @default(cuid())
+  subject_id String
+  date       DateTime     @default(dbgenerated("now()")) @db.Date
+  teacher_id String
+  group_id   String
+  attendance Attendance[]
+  Group      Group        @relation(fields: [group_id], references: [group_id], onDelete: NoAction, onUpdate: NoAction)
+  Subject    Subject      @relation(fields: [subject_id], references: [subject_id], onDelete: NoAction, onUpdate: NoAction)
+  Teacher    Teacher      @relation(fields: [teacher_id], references: [teacher_id], onDelete: NoAction, onUpdate: NoAction)
 }
 
 model Student {
-  student_id   Int          @id
+  student_id   String       @id @default(cuid())
   student_name String       @db.VarChar(255)
-  group_id     Int
+  group_id     String
   Attendance   Attendance[]
   Group        Group        @relation(fields: [group_id], references: [group_id])
 }
 
 model Subject {
-  subject_id   Int      @id
-  subject_name String?  @db.VarChar(255)
+  subject_id   String   @id @default(cuid())
+  subject_name String   @db.VarChar(255)
   faculty_id   String
   teacher_id   String
   lesson       Lesson[]
   faculty      Faculty  @relation(fields: [faculty_id], references: [faculty_id], onDelete: NoAction, onUpdate: NoAction)
-  teacher      Teacher? @relation(fields: [teacher_id], references: [teacher_id])
+  teacher      Teacher  @relation(fields: [teacher_id], references: [teacher_id], onDelete: NoAction, onUpdate: NoAction)
 }
 
 model Teacher {
   teacher_id   String    @id @default(cuid())
   teacher_name String    @db.VarChar(255)
   faculty_id   String
+  email        String    @unique
   lessons      Lesson[]
   subjects     Subject[]
-  faculty      Faculty?  @relation(fields: [faculty_id], references: [faculty_id], onDelete: NoAction, onUpdate: NoAction)
-  User         User[]
+  user         User      @relation(fields: [email], references: [email], onDelete: NoAction, onUpdate: NoAction)
+  faculty      Faculty   @relation(fields: [faculty_id], references: [faculty_id], onDelete: NoAction, onUpdate: NoAction)
+}
+
+enum UserRole {
+  ADMIN
+  TEACHER
+}
+
+enum AttendanceStatus {
+  ABSENT
+  PRESENT
+  LATE
 }

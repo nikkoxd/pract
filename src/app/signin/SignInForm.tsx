@@ -26,8 +26,6 @@ export default function SignInForm() {
   })
 
   const onSubmit = async (data: FormData) => {
-    console.log("Submitting form", data);
-
     const { email, password } = data;
 
     try {
