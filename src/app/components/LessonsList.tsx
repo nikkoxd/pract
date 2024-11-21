@@ -13,9 +13,11 @@ export default function LessonsList({ lessons }: {
     date: Date;
   }[] | undefined
 }) {
+  const length = lessons?.length;
+
   return (
     <ul className="list-decimal list-inside">
-      {lessons ? lessons.map((lesson) => (
+      {length ? lessons.map((lesson) => (
         <li key={lesson.lesson_id} className="list-inside list-disc">
           <Link href={`/lesson/${lesson.lesson_id}`} className="text-blue-500 hover:underline">{lesson.Subject.subject_name}</Link>
         </li>
