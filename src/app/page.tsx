@@ -44,18 +44,19 @@ async function getLessons(session: Session, date: Date) {
   return lessons;
 }
 
-export default async function Home({
-  searchParams
-}: {
-  searchParams?: { [key: string]: string | string[] | undefined }
-}) {
+export default async function Home(
+  props: {
+    searchParams?: Promise<{ [key: string]: string | string[] | undefined }>
+  }
+) {
+  const searchParams = await props.searchParams;
   const session = await getServerSession();
 
   if (!session) {
     redirect("/signin");
   }
 
-  const selectedDate = await searchParams?.date as string || new Date().toISOString().split('T')[0];
+  const selectedDate = searchParams?.date as string || new Date().toISOString().split('T')[0];
 
   const lessons = await getLessons(session, new Date(selectedDate));
 
