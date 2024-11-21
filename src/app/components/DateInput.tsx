@@ -13,6 +13,7 @@ export default function DateInput({ initialDate }: {
     const newDate = event.target.value;
     setSelectedDate(newDate);
     router.push(`/?date=${newDate}`);
+    router.refresh();
   };
 
   return (
