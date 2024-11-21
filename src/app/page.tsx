@@ -38,21 +38,24 @@ async function getLessons(session: Session, date: Date) {
     }
   });
 
+  console.log(date);
   console.log(lessons);
 
   return lessons;
 }
 
-export default async function Home() {
+export default async function Home({
+  searchParams
+}: {
+  searchParams?: { [key: string]: string | string[] | undefined }
+}) {
   const session = await getServerSession();
 
   if (!session) {
     redirect("/signin");
   }
 
-  const searchParams = new URLSearchParams();
-
-  const selectedDate = searchParams.get("date") || new Date().toISOString().split('T')[0];
+  const selectedDate = await searchParams?.date as string || new Date().toISOString().split('T')[0];
 
   const lessons = await getLessons(session, new Date(selectedDate));
 
