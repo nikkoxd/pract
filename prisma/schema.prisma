@@ -35,9 +35,11 @@ model Faculty {
 
 model Group {
   group_id   String    @id @default(cuid())
+  group_name String?   @db.VarChar(255)
   faculty_id String
   faculty    Faculty   @relation(fields: [faculty_id], references: [faculty_id], onDelete: NoAction, onUpdate: NoAction)
   students   Student[]
+  lessons    Lesson[]
 }
 
 model Lesson {
@@ -45,7 +47,9 @@ model Lesson {
   subject_id String
   date       DateTime     @default(dbgenerated("now()")) @db.Date
   teacher_id String
+  group_id   String
   attendance Attendance[]
+  Group      Group        @relation(fields: [group_id], references: [group_id], onDelete: NoAction, onUpdate: NoAction)
   Subject    Subject      @relation(fields: [subject_id], references: [subject_id], onDelete: NoAction, onUpdate: NoAction)
   Teacher    Teacher      @relation(fields: [teacher_id], references: [teacher_id], onDelete: NoAction, onUpdate: NoAction)
 }

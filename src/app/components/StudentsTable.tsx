@@ -6,6 +6,9 @@ import TableHeader from "./TableHeader";
 
 export default function StudentsTable({ lesson, attendances, selectedDate }: {
   lesson: ({
+    Group: {
+      group_name: string | null;
+    };
     Subject: {
       subject_name: string;
     };
@@ -14,6 +17,7 @@ export default function StudentsTable({ lesson, attendances, selectedDate }: {
     lesson_id: string;
     subject_id: string;
     date: Date;
+    group_id: string;
   }) | null,
   attendances: ({
     lesson: {
@@ -50,9 +54,11 @@ export default function StudentsTable({ lesson, attendances, selectedDate }: {
     })
     .filter(lesson => lesson !== null); // Filter out null values
 
+  const header = lesson ? `${lesson.Subject.subject_name} - ${lesson.Group.group_name}` : "Занятие не выбрано";
+
   return (
     <section className="col-span-3 bg-gray-100 dark:bg-gray-800 p-5 rounded-lg">
-      <h1 className="text-2xl font-bold">{lesson ? lesson.Subject.subject_name : "Занятие не выбрано"}</h1>
+      <h1 className="text-2xl font-bold">{header}</h1>
       <table className="w-full table-auto">
         <thead>
           <tr>

@@ -3,15 +3,20 @@
 import { useRouter, useSearchParams } from "next/navigation";
 
 export default function LessonsList({ lessons }: {
-  lessons: {
+  lessons: ({
+    Group: {
+      group_name: string | null;
+    };
     Subject: {
       subject_name: string;
-    },
+    };
+  } & {
     teacher_id: string;
     lesson_id: string;
     subject_id: string;
     date: Date;
-  }[] | undefined
+    group_id: string;
+  })[] | undefined
 }) {
   const router = useRouter();
   const searchParams = useSearchParams();
@@ -32,7 +37,7 @@ export default function LessonsList({ lessons }: {
     <ul className="list-decimal list-inside">
       {length ? lessons.map((lesson) => (
         <li key={lesson.lesson_id} className="list-inside list-disc">
-          <button onClick={() => handleClick(lesson.lesson_id)} className="text-blue-500 hover:underline">{lesson.Subject.subject_name}</button>
+          <button onClick={() => handleClick(lesson.lesson_id)} className="text-blue-500 hover:underline">{lesson.Subject.subject_name} - {lesson.Group.group_name}</button>
         </li>
       )) : <p>Сегодня занятий нет</p>}
     </ul>

@@ -33,6 +33,11 @@ async function getLessons(session: Session, date: Date) {
         select: {
           subject_name: true,
         }
+      },
+      Group: {
+        select: {
+          group_name: true,
+        }
       }
     }
   });
@@ -53,6 +58,11 @@ async function getLessonFromParams(searchParams: { [key: string]: string | strin
       Subject: {
         select: {
           subject_name: true,
+        }
+      },
+      Group: {
+        select: {
+          group_name: true,
         }
       }
     }
