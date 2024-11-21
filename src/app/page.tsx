@@ -73,6 +73,8 @@ async function getLessonFromParams(searchParams: { [key: string]: string | strin
 }
 
 async function getAttendancesForGroup(groupId: string) {
+  if (!groupId) return;
+
   const startOfMonth = new Date();
   startOfMonth.setDate(1);
   startOfMonth.setHours(0, 0, 0, 0);
@@ -128,7 +130,9 @@ export default async function Home(
 
   const lessons = await getLessons(session, new Date(selectedDate));
   const lesson = await getLessonFromParams(searchParams);
-  const attendances = await getAttendancesForGroup(searchParams?.group as string);
+  const attendances = await getAttendancesForGroup(lesson?.group_id as string);
+
+  console.log(attendances);
 
   return (
     <>
