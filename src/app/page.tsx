@@ -1,11 +1,10 @@
 import { getServerSession, Session } from "next-auth";
-import TableCell from "./components/TableCell";
-import TableHeader from "./components/TableHeader";
 import Header from "./header";
 import prisma from "@/lib/prisma";
 import DateInput from "./components/DateInput";
 import LessonsList from "./components/LessonsList";
 import { redirect } from "next/navigation";
+import StudentsTable from "./components/StudentsTable";
 
 async function getTeacher(session: Session) {
   if (!session.user?.email) return;
@@ -41,6 +40,58 @@ async function getLessons(session: Session, date: Date) {
   return lessons;
 }
 
+async function getLessonFromParams(searchParams: { [key: string]: string | string[] | undefined } | undefined) {
+  const lessonId = searchParams?.lesson as string;
+
+  if (!lessonId) return null;
+
+  const lesson = await prisma.lesson.findUnique({
+    where: {
+      lesson_id: lessonId,
+    },
+    include: {
+      Subject: {
+        select: {
+          subject_name: true,
+        }
+      }
+    }
+  });
+
+  return lesson;
+}
+
+async function getAttendancesForGroup(groupId: string) {
+  const startOfMonth = new Date();
+  startOfMonth.setDate(1);
+  startOfMonth.setHours(0, 0, 0, 0);
+
+  const endOfMonth = new Date();
+  endOfMonth.setMonth(endOfMonth.getMonth() + 1);
+  endOfMonth.setDate(0);
+  endOfMonth.setHours(23, 59, 59, 999);
+
+  const attendances = await prisma.attendance.findMany({
+    where: {
+      student: {
+        group_id: groupId,
+      },
+      lesson: {
+        date: {
+          gte: startOfMonth,
+          lte: endOfMonth,
+        },
+      },
+    },
+    include: {
+      student: true,
+      lesson: true,
+    },
+  });
+
+  return attendances;
+}
+
 export default async function Home(
   props: {
     searchParams?: Promise<{ [key: string]: string | string[] | undefined }>
@@ -56,6 +107,8 @@ export default async function Home(
   const selectedDate = searchParams?.date as string || new Date().toISOString().split('T')[0];
 
   const lessons = await getLessons(session, new Date(selectedDate));
+  const lesson = await getLessonFromParams(searchParams);
+  const attendances = await getAttendancesForGroup(searchParams?.group as string);
 
   return (
     <>
@@ -68,27 +121,7 @@ export default async function Home(
           </div>
           <LessonsList lessons={lessons} />
         </section>
-        <section className="col-span-3 bg-gray-100 dark:bg-gray-800 p-5 rounded-lg">
-          <h1 className="text-2xl font-bold">Базы данных - Б22-191-1</h1>
-          <table className="w-full table-auto">
-            <thead>
-              <tr>
-                <TableHeader>ФИО Участника</TableHeader>
-                <TableHeader>1</TableHeader>
-                <TableHeader>2</TableHeader>
-                <TableHeader>3</TableHeader>
-              </tr>
-            </thead>
-            <tbody>
-              <tr>
-                <TableCell>Иванов Иван Иванович</TableCell>
-                <TableCell>+</TableCell>
-                <TableCell>+</TableCell>
-                <TableCell>+</TableCell>
-              </tr>
-            </tbody>
-          </table>
-        </section>
+        <StudentsTable lesson={lesson} attendances={attendances} selectedDate={selectedDate} />
       </main>
     </>
   );
