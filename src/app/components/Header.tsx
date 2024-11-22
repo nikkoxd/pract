@@ -1,7 +1,7 @@
 import Link from "next/link";
 import { getServerSession, Session } from "next-auth";
-import SignOutButton from "./components/SignOutButton";
 import prisma from "@/lib/prisma";
+import SignOutButton from "./SignOutButton";
 
 async function getUserName(session: Session) {
   if (!session.user?.email) return;

@@ -1,5 +1,5 @@
 import { getServerSession, Session } from "next-auth";
-import Header from "./header";
+import Header from "./components/Header";
 import prisma from "@/lib/prisma";
 import DateInput from "./components/DateInput";
 import LessonsList from "./components/LessonsList";
