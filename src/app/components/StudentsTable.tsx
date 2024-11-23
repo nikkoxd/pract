@@ -159,43 +159,45 @@ export default function StudentsTable({ lesson, attendances, selectedDate, updat
     <section className="col-span-3 bg-gray-100 dark:bg-gray-800 p-5 rounded-lg">
       <h1 className="text-2xl font-bold">{header}</h1>
       {attendanceData ?
-        <table className="w-full table-auto">
-          <thead>
-            <tr>
-              <TableHeader>ФИО Студента</TableHeader>
-              {uniqueLessons.map((lesson, _) => (
-                <TableHeader key={lesson.lesson_id} isCurrentDate={lesson.date.toISOString().split('T')[0] === selectedDate}>{lesson.date.getDate()}</TableHeader>
-              ))}
-            </tr>
-          </thead>
-          <tbody>
-            {uniqueStudents.map((student) => (
-              <tr key={student.student_id}>
-                <TableCell>{student.student_name}</TableCell>
-                {uniqueLessons.map((lesson) => {
-                  const attendance = attendanceData.find(
-                    (att) => att.student.student_id === student.student_id && att.lesson.lesson_id === lesson.lesson_id
-                  );
-                  return (
-                    <TableCell
-                      key={lesson.lesson_id}
-                      status={attendance ? attendance.attendance_status : undefined}
-                      isCurrentDate={lesson.date.toISOString().split('T')[0] === selectedDate}
-                      onChange={handleAttendanceChange}
-                      attendanceId={attendance ? attendance.attendance_id : undefined}
-                    >
-                      {attendance ? attendance.attendance_status : "Нет данных"}
-                    </TableCell>
-                  );
-                })}
+        <>
+          <table className="w-full table-auto">
+            <thead>
+              <tr>
+                <TableHeader>ФИО Студента</TableHeader>
+                {uniqueLessons.map((lesson, _) => (
+                  <TableHeader key={lesson.lesson_id} isCurrentDate={lesson.date.toISOString().split('T')[0] === selectedDate}>{lesson.date.getDate()}</TableHeader>
+                ))}
               </tr>
-            ))}
-          </tbody>
-        </table>
-        <div className="mt-4">
-          <button onClick={exportToCSV} className="bg-blue-500 text-white px-4 py-2 rounded mr-2">Загрузить в CSV</button>
-          <button onClick={exportToXLSX} className="bg-green-500 text-white px-4 py-2 rounded">Загрузить в XLSX</button>
-        </div>
+            </thead>
+            <tbody>
+              {uniqueStudents.map((student) => (
+                <tr key={student.student_id}>
+                  <TableCell>{student.student_name}</TableCell>
+                  {uniqueLessons.map((lesson) => {
+                    const attendance = attendanceData.find(
+                      (att) => att.student.student_id === student.student_id && att.lesson.lesson_id === lesson.lesson_id
+                    );
+                    return (
+                      <TableCell
+                        key={lesson.lesson_id}
+                        status={attendance ? attendance.attendance_status : undefined}
+                        isCurrentDate={lesson.date.toISOString().split('T')[0] === selectedDate}
+                        onChange={handleAttendanceChange}
+                        attendanceId={attendance ? attendance.attendance_id : undefined}
+                      >
+                        {attendance ? attendance.attendance_status : "Нет данных"}
+                      </TableCell>
+                    );
+                  })}
+                </tr>
+              ))}
+            </tbody>
+          </table>
+          <div className="mt-4">
+            <button onClick={exportToCSV} className="bg-blue-500 text-white px-4 py-2 rounded mr-2">Загрузить в CSV</button>
+            <button onClick={exportToXLSX} className="bg-green-500 text-white px-4 py-2 rounded">Загрузить в XLSX</button>
+          </div>
+        </>
         :
         <p>Нет данных</p>
       }
