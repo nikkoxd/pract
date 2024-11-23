@@ -81,6 +81,8 @@ export default function StudentsTable({ lesson, attendances, selectedDate, updat
   };
 
   const exportToCSV = () => {
+    if (!attendanceData) return;
+
     const attendanceStatusMap = {
       PRESENT: "Присутствует",
       ABSENT: "Отсутствует",
@@ -104,10 +106,13 @@ export default function StudentsTable({ lesson, attendances, selectedDate, updat
       return row;
     });
 
-    const headers = ["ФИО студента", ...uniqueLessons.map(lesson => lesson.date.toISOString().split('T')[0]), "Присутствует", "Отсутствует", "Опоздал"];
-    const rows = [headers, ...csvData];
+    const csv = Papa.unparse({
+      fields: ["ФИО студента", ...uniqueLessons.map(lesson => lesson.date.toISOString().split('T')[0]), "Присутствует", "Отсутствует", "Опоздал"],
+      data: csvData,
+    }, {
+      delimiter: ";",
+    });
 
-    const csv = rows.map(row => row.map(cell => `"${cell}"`).join(';')).join('\n');
 
     const bom = "\uFEFF";
     const csvWithBOM = bom + csv;
@@ -122,6 +127,8 @@ export default function StudentsTable({ lesson, attendances, selectedDate, updat
   };
 
   const exportToXLSX = () => {
+    if (!attendanceData) return;
+
     const attendanceStatusMap = {
       PRESENT: "Присутствует",
       ABSENT: "Отсутствует",
