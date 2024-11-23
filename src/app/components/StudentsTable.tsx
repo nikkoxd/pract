@@ -1,6 +1,6 @@
 "use client";
 
-import { useState } from 'react';
+import { useEffect, useState } from 'react';
 import { $Enums } from "@prisma/client";
 import TableCell from "./TableCell";
 import TableHeader from "./TableHeader";
@@ -40,22 +40,26 @@ export default function StudentsTable({ lesson, attendances, selectedDate, updat
     lesson_id: string;
     attendance_status: $Enums.AttendanceStatus;
     comment: string | null;
-  })[],
+  })[] | undefined,
   selectedDate: string,
   updateAttendanceStatusAction: (_attendanceId: string, _newStatus: string) => Promise<void>
 }) {
   const [attendanceData, setAttendanceData] = useState(attendances);
 
-  const uniqueStudents = [...new Set(attendanceData.map(attendance => attendance.student.student_id))]
+  useEffect(() => {
+    setAttendanceData(attendances);
+  }, [attendances]);
+
+  const uniqueStudents = [...new Set(attendanceData?.map(attendance => attendance.student.student_id))]
     .map(studentId => {
-      const attendance = attendanceData.find(attendance => attendance.student.student_id === studentId);
+      const attendance = attendanceData?.find(attendance => attendance.student.student_id === studentId);
       return attendance ? attendance.student : null;
     })
     .filter(student => student !== null); // Filter out null values
 
-  const uniqueLessons = [...new Set(attendanceData.map(attendance => attendance.lesson.lesson_id))]
+  const uniqueLessons = [...new Set(attendanceData?.map(attendance => attendance.lesson.lesson_id))]
     .map(lessonId => {
-      const attendance = attendanceData.find(attendance => attendance.lesson.lesson_id === lessonId);
+      const attendance = attendanceData?.find(attendance => attendance.lesson.lesson_id === lessonId);
       return attendance ? attendance.lesson : null;
     })
     .filter(lesson => lesson !== null); // Filter out null values
@@ -65,7 +69,7 @@ export default function StudentsTable({ lesson, attendances, selectedDate, updat
   const handleAttendanceChange = async (newStatus: string, attendanceId: string) => {
     // Update the local state
     setAttendanceData(prevData =>
-      prevData.map(attendance =>
+      prevData?.map(attendance =>
         attendance.attendance_id === attendanceId
           ? { ...attendance, attendance_status: newStatus as $Enums.AttendanceStatus }
           : attendance
@@ -154,43 +158,47 @@ export default function StudentsTable({ lesson, attendances, selectedDate, updat
   return (
     <section className="col-span-3 bg-gray-100 dark:bg-gray-800 p-5 rounded-lg">
       <h1 className="text-2xl font-bold">{header}</h1>
-      <table className="w-full table-auto">
-        <thead>
-          <tr>
-            <TableHeader>ФИО Студента</TableHeader>
-            {uniqueLessons.map((lesson, _) => (
-              <TableHeader key={lesson.lesson_id} isCurrentDate={lesson.date.toISOString().split('T')[0] === selectedDate}>{lesson.date.getDate()}</TableHeader>
-            ))}
-          </tr>
-        </thead>
-        <tbody>
-          {uniqueStudents.map((student) => (
-            <tr key={student.student_id}>
-              <TableCell>{student.student_name}</TableCell>
-              {uniqueLessons.map((lesson) => {
-                const attendance = attendanceData.find(
-                  (att) => att.student.student_id === student.student_id && att.lesson.lesson_id === lesson.lesson_id
-                );
-                return (
-                  <TableCell
-                    key={lesson.lesson_id}
-                    status={attendance ? attendance.attendance_status : undefined}
-                    isCurrentDate={lesson.date.toISOString().split('T')[0] === selectedDate}
-                    onChange={handleAttendanceChange}
-                    attendanceId={attendance ? attendance.attendance_id : undefined}
-                  >
-                    {attendance ? attendance.attendance_status : "Нет данных"}
-                  </TableCell>
-                );
-              })}
+      {attendanceData ?
+        <table className="w-full table-auto">
+          <thead>
+            <tr>
+              <TableHeader>ФИО Студента</TableHeader>
+              {uniqueLessons.map((lesson, _) => (
+                <TableHeader key={lesson.lesson_id} isCurrentDate={lesson.date.toISOString().split('T')[0] === selectedDate}>{lesson.date.getDate()}</TableHeader>
+              ))}
             </tr>
-          ))}
-        </tbody>
-      </table>
-      <div className="mt-4">
-        <button onClick={exportToCSV} className="bg-blue-500 text-white px-4 py-2 rounded mr-2">Загрузить в CSV</button>
-        <button onClick={exportToXLSX} className="bg-green-500 text-white px-4 py-2 rounded">Загрузить в XLSX</button>
-      </div>
+          </thead>
+          <tbody>
+            {uniqueStudents.map((student) => (
+              <tr key={student.student_id}>
+                <TableCell>{student.student_name}</TableCell>
+                {uniqueLessons.map((lesson) => {
+                  const attendance = attendanceData.find(
+                    (att) => att.student.student_id === student.student_id && att.lesson.lesson_id === lesson.lesson_id
+                  );
+                  return (
+                    <TableCell
+                      key={lesson.lesson_id}
+                      status={attendance ? attendance.attendance_status : undefined}
+                      isCurrentDate={lesson.date.toISOString().split('T')[0] === selectedDate}
+                      onChange={handleAttendanceChange}
+                      attendanceId={attendance ? attendance.attendance_id : undefined}
+                    >
+                      {attendance ? attendance.attendance_status : "Нет данных"}
+                    </TableCell>
+                  );
+                })}
+              </tr>
+            ))}
+          </tbody>
+        </table>
+        <div className="mt-4">
+          <button onClick={exportToCSV} className="bg-blue-500 text-white px-4 py-2 rounded mr-2">Загрузить в CSV</button>
+          <button onClick={exportToXLSX} className="bg-green-500 text-white px-4 py-2 rounded">Загрузить в XLSX</button>
+        </div>
+        :
+        <p>Нет данных</p>
+      }
     </section>
   );
 }
