@@ -1,4 +1,6 @@
 import prisma from "@/lib/prisma"
+import UserRow from "./UserRow";
+import { $Enums } from "@prisma/client";
 
 async function getUsers() {
   const users = await prisma.user.findMany({
@@ -8,6 +10,32 @@ async function getUsers() {
   });
 
   return users;
+}
+
+async function updateUserRole(id: string, role: $Enums.UserRole) {
+  "use server";
+
+  try {
+    await prisma.user.update({
+      where: { id },
+      data: { role },
+    });
+  } catch (error) {
+    console.error("Error updating user:", error);
+  }
+}
+
+async function updateUserTeacher(id: string, teacherId: string) {
+  "use server";
+
+  try {
+    await prisma.user.update({
+      where: { id },
+      data: { Teacher: { connect: { teacher_id: teacherId } } },
+    });
+  } catch (error) {
+    console.error("Error updating user:", error);
+  }
 }
 
 async function getTeachers() {
@@ -34,24 +62,13 @@ export default async function AdminUsers() {
         </thead>
         <tbody>
           {users.map((user) => (
-            <tr key={user.id}>
-              <td className="py-2 px-4 border-b">{user.id}</td>
-              <td className="py-2 px-4 border-b">{user.email}</td>
-              <td className="py-2 px-4 border-b">
-                <select className="bg-transparent" value={user.role}>
-                  <option value="ADMIN">Администратор</option>
-                  <option value="TEACHER">Преподаватель</option>
-                </select>
-              </td>
-              <td className="py-2 px-4 border-b">
-                <select className="bg-transparent" value={user.Teacher ? user.Teacher.teacher_id : "none"}>
-                  <option value="none">Нет</option>
-                  {teachers.map((teacher) => (
-                    <option key={teacher.teacher_id} value={teacher.teacher_id}>{teacher.teacher_name}</option>
-                  ))}
-                </select>
-              </td>
-            </tr>
+            <UserRow
+              key={user.id}
+              user={user}
+              teachers={teachers}
+              updateUserRole={updateUserRole}
+              updateUserTeacher={updateUserTeacher}
+            />
           ))}
         </tbody>
       </table>
