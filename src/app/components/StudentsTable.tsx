@@ -77,13 +77,21 @@ export default function StudentsTable({ lesson, attendances, selectedDate, updat
   };
 
   const exportToCSV = () => {
+    const attendanceStatusMap = {
+      PRESENT: "Присутствует",
+      ABSENT: "Отсутствует",
+      LATE: "Опоздал",
+      "Нет данных": "Нет данных"
+    };
+
     const csvData = uniqueStudents.map(student => {
       const row = [student.student_name];
       uniqueLessons.forEach(lesson => {
         const attendance = attendanceData.find(
           att => att.student.student_id === student.student_id && att.lesson.lesson_id === lesson.lesson_id
         );
-        row.push(attendance ? attendance.attendance_status : "Нет данных");
+        const status = attendance ? attendance.attendance_status : "Нет данных";
+        row.push(attendanceStatusMap[status]);
       });
       const presentCount = attendanceData.filter(att => att.student.student_id === student.student_id && att.attendance_status === "PRESENT").length;
       const absentCount = attendanceData.filter(att => att.student.student_id === student.student_id && att.attendance_status === "ABSENT").length;
@@ -92,17 +100,15 @@ export default function StudentsTable({ lesson, attendances, selectedDate, updat
       return row;
     });
 
-    const csv = Papa.unparse({
-      fields: ["ФИО студента", ...uniqueLessons.map(lesson => lesson.date.toISOString().split('T')[0]), "Присутствует", "Отсутствует", "Опоздал"],
-      data: csvData,
-    }, {
-      delimiter: ";",
-    });
+    const headers = ["ФИО студента", ...uniqueLessons.map(lesson => lesson.date.toISOString().split('T')[0]), "Присутствует", "Отсутствует", "Опоздал"];
+    const rows = [headers, ...csvData];
+
+    const csv = rows.map(row => row.map(cell => `"${cell}"`).join(';')).join('\n');
 
     const bom = "\uFEFF";
     const csvWithBOM = bom + csv;
 
-    const csvBlob = new Blob([csvWithBOM], { type: "text/csv" });
+    const csvBlob = new Blob([csvWithBOM], { type: 'text/csv;charset=utf-8;' });
     const link = document.createElement('a');
     link.href = URL.createObjectURL(csvBlob);
     link.setAttribute('download', 'attendance.csv');
@@ -112,7 +118,13 @@ export default function StudentsTable({ lesson, attendances, selectedDate, updat
   };
 
   const exportToXLSX = () => {
-    const wb = XLSX.utils.book_new();
+    const attendanceStatusMap = {
+      PRESENT: "Присутствует",
+      ABSENT: "Отсутствует",
+      LATE: "Опоздал",
+      "Нет данных": "Нет данных"
+    };
+
     const wsData = [
       ["ФИО студента", ...uniqueLessons.map(lesson => lesson.date.toISOString().split('T')[0]), "Присутствует", "Отсутствует", "Опоздал"],
       ...uniqueStudents.map(student => {
@@ -121,7 +133,8 @@ export default function StudentsTable({ lesson, attendances, selectedDate, updat
           const attendance = attendanceData.find(
             att => att.student.student_id === student.student_id && att.lesson.lesson_id === lesson.lesson_id
           );
-          row.push(attendance ? attendance.attendance_status : "Нет данных");
+          const status = attendance ? attendance.attendance_status : "Нет данных";
+          row.push(attendanceStatusMap[status]);
         });
         const presentCount = attendanceData.filter(att => att.student.student_id === student.student_id && att.attendance_status === "PRESENT").length;
         const absentCount = attendanceData.filter(att => att.student.student_id === student.student_id && att.attendance_status === "ABSENT").length;
@@ -131,8 +144,9 @@ export default function StudentsTable({ lesson, attendances, selectedDate, updat
       })
     ];
 
+    const wb = XLSX.utils.book_new();
     const ws = XLSX.utils.aoa_to_sheet(wsData);
-    XLSX.utils.book_append_sheet(wb, ws, 'Журнал');
+    XLSX.utils.book_append_sheet(wb, ws, 'Attendance');
     XLSX.writeFile(wb, 'attendance.xlsx');
   };
 
