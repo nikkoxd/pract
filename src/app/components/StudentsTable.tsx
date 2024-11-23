@@ -4,6 +4,8 @@ import { useState } from 'react';
 import { $Enums } from "@prisma/client";
 import TableCell from "./TableCell";
 import TableHeader from "./TableHeader";
+import Papa from "papaparse";
+import * as XLSX from "xlsx";
 
 export default function StudentsTable({ lesson, attendances, selectedDate, updateAttendanceStatusAction }: {
   lesson: ({
@@ -74,6 +76,67 @@ export default function StudentsTable({ lesson, attendances, selectedDate, updat
     await updateAttendanceStatusAction(attendanceId, newStatus);
   };
 
+  const exportToCSV = () => {
+    const csvData = uniqueStudents.map(student => {
+      const row = [student.student_name];
+      uniqueLessons.forEach(lesson => {
+        const attendance = attendanceData.find(
+          att => att.student.student_id === student.student_id && att.lesson.lesson_id === lesson.lesson_id
+        );
+        row.push(attendance ? attendance.attendance_status : "Нет данных");
+      });
+      const presentCount = attendanceData.filter(att => att.student.student_id === student.student_id && att.attendance_status === "PRESENT").length;
+      const absentCount = attendanceData.filter(att => att.student.student_id === student.student_id && att.attendance_status === "ABSENT").length;
+      const lateCount = attendanceData.filter(att => att.student.student_id === student.student_id && att.attendance_status === "LATE").length;
+      row.push(presentCount.toString(), absentCount.toString(), lateCount.toString());
+      return row;
+    });
+
+    const csv = Papa.unparse({
+      fields: ["ФИО студента", ...uniqueLessons.map(lesson => lesson.date.toISOString().split('T')[0]), "Присутствует", "Отсутствует", "Опоздал"],
+      data: csvData,
+    }, {
+      delimiter: ";",
+    });
+
+    const bom = "\uFEFF";
+    const csvWithBOM = bom + csv;
+
+    const csvBlob = new Blob([csvWithBOM], { type: "text/csv" });
+    const link = document.createElement('a');
+    link.href = URL.createObjectURL(csvBlob);
+    link.setAttribute('download', 'attendance.csv');
+    document.body.appendChild(link);
+    link.click();
+    document.body.removeChild(link);
+  };
+
+  const exportToXLSX = () => {
+    const wb = XLSX.utils.book_new();
+    const wsData = [
+      ["ФИО студента", ...uniqueLessons.map(lesson => lesson.date.toISOString().split('T')[0]), "Присутствует", "Отсутствует", "Опоздал"],
+      ...uniqueStudents.map(student => {
+        const row = [student.student_name];
+        uniqueLessons.forEach(lesson => {
+          const attendance = attendanceData.find(
+            att => att.student.student_id === student.student_id && att.lesson.lesson_id === lesson.lesson_id
+          );
+          row.push(attendance ? attendance.attendance_status : "Нет данных");
+        });
+        const presentCount = attendanceData.filter(att => att.student.student_id === student.student_id && att.attendance_status === "PRESENT").length;
+        const absentCount = attendanceData.filter(att => att.student.student_id === student.student_id && att.attendance_status === "ABSENT").length;
+        const lateCount = attendanceData.filter(att => att.student.student_id === student.student_id && att.attendance_status === "LATE").length;
+        row.push(presentCount.toString(), absentCount.toString(), lateCount.toString());
+        return row;
+      })
+    ];
+
+    const ws = XLSX.utils.aoa_to_sheet(wsData);
+    XLSX.utils.book_append_sheet(wb, ws, 'Журнал');
+    XLSX.writeFile(wb, 'attendance.xlsx');
+  };
+
+
   return (
     <section className="col-span-3 bg-gray-100 dark:bg-gray-800 p-5 rounded-lg">
       <h1 className="text-2xl font-bold">{header}</h1>
@@ -110,6 +173,10 @@ export default function StudentsTable({ lesson, attendances, selectedDate, updat
           ))}
         </tbody>
       </table>
+      <div className="mt-4">
+        <button onClick={exportToCSV} className="bg-blue-500 text-white px-4 py-2 rounded mr-2">Загрузить в CSV</button>
+        <button onClick={exportToXLSX} className="bg-green-500 text-white px-4 py-2 rounded">Загрузить в XLSX</button>
+      </div>
     </section>
   );
 }
