@@ -4,6 +4,8 @@ import { useEffect, useState } from 'react';
 import { $Enums } from "@prisma/client";
 import TableCell from "./TableCell";
 import TableHeader from "./TableHeader";
+import Papa from "papaparse";
+import * as XLSX from "xlsx";
 
 export default function StudentsTable({ lesson, attendances, selectedDate, updateAttendanceStatusAction }: {
   lesson: ({
@@ -78,43 +80,131 @@ export default function StudentsTable({ lesson, attendances, selectedDate, updat
     await updateAttendanceStatusAction(attendanceId, newStatus);
   };
 
+  const exportToCSV = () => {
+    if (!attendanceData) return;
+
+    const attendanceStatusMap = {
+      PRESENT: "Присутствует",
+      ABSENT: "Отсутствует",
+      LATE: "Опоздал",
+      "Нет данных": "Нет данных"
+    };
+
+    const csvData = uniqueStudents.map(student => {
+      const row = [student.student_name];
+      uniqueLessons.forEach(lesson => {
+        const attendance = attendanceData.find(
+          att => att.student.student_id === student.student_id && att.lesson.lesson_id === lesson.lesson_id
+        );
+        const status = attendance ? attendance.attendance_status : "Нет данных";
+        row.push(attendanceStatusMap[status]);
+      });
+      const presentCount = attendanceData.filter(att => att.student.student_id === student.student_id && att.attendance_status === "PRESENT").length;
+      const absentCount = attendanceData.filter(att => att.student.student_id === student.student_id && att.attendance_status === "ABSENT").length;
+      const lateCount = attendanceData.filter(att => att.student.student_id === student.student_id && att.attendance_status === "LATE").length;
+      row.push(presentCount.toString(), absentCount.toString(), lateCount.toString());
+      return row;
+    });
+
+    const csv = Papa.unparse({
+      fields: ["ФИО студента", ...uniqueLessons.map(lesson => lesson.date.toISOString().split('T')[0]), "Присутствует", "Отсутствует", "Опоздал"],
+      data: csvData,
+    }, {
+      delimiter: ";",
+    });
+
+
+    const bom = "\uFEFF";
+    const csvWithBOM = bom + csv;
+
+    const csvBlob = new Blob([csvWithBOM], { type: 'text/csv;charset=utf-8;' });
+    const link = document.createElement('a');
+    link.href = URL.createObjectURL(csvBlob);
+    link.setAttribute('download', 'attendance.csv');
+    document.body.appendChild(link);
+    link.click();
+    document.body.removeChild(link);
+  };
+
+  const exportToXLSX = () => {
+    if (!attendanceData) return;
+
+    const attendanceStatusMap = {
+      PRESENT: "Присутствует",
+      ABSENT: "Отсутствует",
+      LATE: "Опоздал",
+      "Нет данных": "Нет данных"
+    };
+
+    const wsData = [
+      ["ФИО студента", ...uniqueLessons.map(lesson => lesson.date.toISOString().split('T')[0]), "Присутствует", "Отсутствует", "Опоздал"],
+      ...uniqueStudents.map(student => {
+        const row = [student.student_name];
+        uniqueLessons.forEach(lesson => {
+          const attendance = attendanceData.find(
+            att => att.student.student_id === student.student_id && att.lesson.lesson_id === lesson.lesson_id
+          );
+          const status = attendance ? attendance.attendance_status : "Нет данных";
+          row.push(attendanceStatusMap[status]);
+        });
+        const presentCount = attendanceData.filter(att => att.student.student_id === student.student_id && att.attendance_status === "PRESENT").length;
+        const absentCount = attendanceData.filter(att => att.student.student_id === student.student_id && att.attendance_status === "ABSENT").length;
+        const lateCount = attendanceData.filter(att => att.student.student_id === student.student_id && att.attendance_status === "LATE").length;
+        row.push(presentCount.toString(), absentCount.toString(), lateCount.toString());
+        return row;
+      })
+    ];
+
+    const wb = XLSX.utils.book_new();
+    const ws = XLSX.utils.aoa_to_sheet(wsData);
+    XLSX.utils.book_append_sheet(wb, ws, 'Attendance');
+    XLSX.writeFile(wb, 'attendance.xlsx');
+  };
+
+
   return (
     <section className="col-span-3 bg-gray-100 dark:bg-gray-800 p-5 rounded-lg">
       <h1 className="text-2xl font-bold">{header}</h1>
       {attendanceData ?
-        <table className="w-full table-auto">
-          <thead>
-            <tr>
-              <TableHeader>ФИО Студента</TableHeader>
-              {uniqueLessons.map((lesson, _) => (
-                <TableHeader key={lesson.lesson_id} isCurrentDate={lesson.date.toISOString().split('T')[0] === selectedDate}>{lesson.date.getDate()}</TableHeader>
-              ))}
-            </tr>
-          </thead>
-          <tbody>
-            {uniqueStudents.map((student) => (
-              <tr key={student.student_id}>
-                <TableCell>{student.student_name}</TableCell>
-                {uniqueLessons.map((lesson) => {
-                  const attendance = attendanceData.find(
-                    (att) => att.student.student_id === student.student_id && att.lesson.lesson_id === lesson.lesson_id
-                  );
-                  return (
-                    <TableCell
-                      key={lesson.lesson_id}
-                      status={attendance ? attendance.attendance_status : undefined}
-                      isCurrentDate={lesson.date.toISOString().split('T')[0] === selectedDate}
-                      onChange={handleAttendanceChange}
-                      attendanceId={attendance ? attendance.attendance_id : undefined}
-                    >
-                      {attendance ? attendance.attendance_status : "Нет данных"}
-                    </TableCell>
-                  );
-                })}
+        <>
+          <table className="w-full table-auto">
+            <thead>
+              <tr>
+                <TableHeader>ФИО Студента</TableHeader>
+                {uniqueLessons.map((lesson, _) => (
+                  <TableHeader key={lesson.lesson_id} isCurrentDate={lesson.date.toISOString().split('T')[0] === selectedDate}>{lesson.date.getDate()}</TableHeader>
+                ))}
               </tr>
-            ))}
-          </tbody>
-        </table>
+            </thead>
+            <tbody>
+              {uniqueStudents.map((student) => (
+                <tr key={student.student_id}>
+                  <TableCell>{student.student_name}</TableCell>
+                  {uniqueLessons.map((lesson) => {
+                    const attendance = attendanceData.find(
+                      (att) => att.student.student_id === student.student_id && att.lesson.lesson_id === lesson.lesson_id
+                    );
+                    return (
+                      <TableCell
+                        key={lesson.lesson_id}
+                        status={attendance ? attendance.attendance_status : undefined}
+                        isCurrentDate={lesson.date.toISOString().split('T')[0] === selectedDate}
+                        onChange={handleAttendanceChange}
+                        attendanceId={attendance ? attendance.attendance_id : undefined}
+                      >
+                        {attendance ? attendance.attendance_status : "Нет данных"}
+                      </TableCell>
+                    );
+                  })}
+                </tr>
+              ))}
+            </tbody>
+          </table>
+          <div className="mt-4">
+            <button onClick={exportToCSV} className="bg-blue-500 text-white px-4 py-2 rounded mr-2">Загрузить в CSV</button>
+            <button onClick={exportToXLSX} className="bg-green-500 text-white px-4 py-2 rounded">Загрузить в XLSX</button>
+          </div>
+        </>
         :
         <p>Нет данных</p>
       }
