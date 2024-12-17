@@ -72,14 +72,14 @@ async function getLessonFromParams(searchParams: { [key: string]: string | strin
   return lesson;
 }
 
-async function getAttendancesForGroup(groupId: string) {
+async function getAttendancesForGroup(groupId: string, date: Date) {
   if (!groupId) return;
 
-  const startOfMonth = new Date();
+  const startOfMonth = new Date(date);
   startOfMonth.setDate(1);
   startOfMonth.setHours(0, 0, 0, 0);
 
-  const endOfMonth = new Date();
+  const endOfMonth = new Date(date);
   endOfMonth.setMonth(endOfMonth.getMonth() + 1);
   endOfMonth.setDate(0);
   endOfMonth.setHours(23, 59, 59, 999);
@@ -130,7 +130,7 @@ export default async function Home(
 
   const lessons = await getLessons(session, new Date(selectedDate));
   const lesson = await getLessonFromParams(searchParams);
-  const attendances = await getAttendancesForGroup(lesson?.group_id as string);
+  const attendances = await getAttendancesForGroup(lesson?.group_id as string, lesson?.date as Date);
 
   console.log(attendances);
 
