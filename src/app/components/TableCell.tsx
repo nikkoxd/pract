@@ -33,7 +33,7 @@ export default function TableCell({ children, status, isCurrentDate, onChange, a
 
   return (
     <td className={cellClass}>
-      {isCurrentDate ? (
+      {isCurrentDate && status ? (
         <select
           value={status}
           onChange={(e) => onChange && onChange(e.target.value, attendanceId!)}

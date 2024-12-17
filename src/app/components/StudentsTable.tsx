@@ -1,7 +1,7 @@
 "use client";
 
 import { useEffect, useState } from 'react';
-import { $Enums, Lesson } from "@prisma/client";
+import { $Enums } from "@prisma/client";
 import TableCell from "./TableCell";
 import TableHeader from "./TableHeader";
 import Papa from "papaparse";
