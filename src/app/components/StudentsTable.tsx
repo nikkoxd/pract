@@ -129,13 +129,6 @@ export default function StudentsTable({ lesson, attendances, selectedDate, updat
   const exportToXLSX = () => {
     if (!attendanceData) return;
 
-    const attendanceStatusMap = {
-      PRESENT: "Присутствует",
-      ABSENT: "Отсутствует",
-      LATE: "Опоздал",
-      "Нет данных": "Нет данных"
-    };
-
     const wsData = [
       ["ФИО студента", ...uniqueLessons.map(lesson => lesson.date.toISOString().split('T')[0]), "Присутствует", "Отсутствует", "Опоздал"],
       ...uniqueStudents.map(student => {
@@ -161,6 +154,12 @@ export default function StudentsTable({ lesson, attendances, selectedDate, updat
     XLSX.writeFile(wb, 'attendance.xlsx');
   };
 
+  const attendanceStatusMap = {
+    PRESENT: "Присутствует",
+    ABSENT: "Отсутствует",
+    LATE: "Опоздал",
+    "Нет данных": "Нет данных"
+  };
 
   return (
     <section className="col-span-3 bg-gray-100 dark:bg-gray-800 p-5 rounded-lg">
@@ -192,7 +191,7 @@ export default function StudentsTable({ lesson, attendances, selectedDate, updat
                         onChange={handleAttendanceChange}
                         attendanceId={attendance ? attendance.attendance_id : undefined}
                       >
-                        {attendance ? attendance.attendance_status : "Нет данных"}
+                        {attendance ? attendanceStatusMap[attendance.attendance_status] : "Нет данных"}
                       </TableCell>
                     );
                   })}
