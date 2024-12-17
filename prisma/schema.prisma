@@ -21,8 +21,8 @@ model Attendance {
   lesson_id         String
   attendance_status AttendanceStatus
   comment           String?
-  lesson            Lesson?          @relation(fields: [lesson_id], references: [lesson_id], onDelete: NoAction, onUpdate: NoAction)
-  student           Student?         @relation(fields: [student_id], references: [student_id], onDelete: NoAction, onUpdate: NoAction)
+  lesson            Lesson          @relation(fields: [lesson_id], references: [lesson_id], onDelete: NoAction, onUpdate: NoAction)
+  student           Student         @relation(fields: [student_id], references: [student_id], onDelete: NoAction, onUpdate: NoAction)
 }
 
 model Faculty {
@@ -37,7 +37,7 @@ model Group {
   group_id   String    @id @default(cuid())
   group_name String?   @db.VarChar(255)
   faculty_id String
-  faculty    Faculty?  @relation(fields: [faculty_id], references: [faculty_id], onDelete: NoAction, onUpdate: NoAction)
+  faculty    Faculty  @relation(fields: [faculty_id], references: [faculty_id], onDelete: NoAction, onUpdate: NoAction)
   students   Student[]
   lessons    Lesson[]
 }
@@ -49,9 +49,9 @@ model Lesson {
   teacher_id String
   group_id   String
   attendance Attendance[]
-  Group      Group?       @relation(fields: [group_id], references: [group_id], onDelete: NoAction, onUpdate: NoAction)
-  Subject    Subject?     @relation(fields: [subject_id], references: [subject_id], onDelete: NoAction, onUpdate: NoAction)
-  Teacher    Teacher?     @relation(fields: [teacher_id], references: [teacher_id], onDelete: NoAction, onUpdate: NoAction)
+  Group      Group       @relation(fields: [group_id], references: [group_id], onDelete: NoAction, onUpdate: NoAction)
+  Subject    Subject     @relation(fields: [subject_id], references: [subject_id], onDelete: NoAction, onUpdate: NoAction)
+  Teacher    Teacher     @relation(fields: [teacher_id], references: [teacher_id], onDelete: NoAction, onUpdate: NoAction)
 }
 
 model Student {
@@ -59,7 +59,7 @@ model Student {
   student_name String       @db.VarChar(255)
   group_id     String
   Attendance   Attendance[]
-  Group        Group?       @relation(fields: [group_id], references: [group_id])
+  Group        Group       @relation(fields: [group_id], references: [group_id])
 }
 
 model Subject {
@@ -68,8 +68,8 @@ model Subject {
   faculty_id   String
   teacher_id   String
   lesson       Lesson[]
-  faculty      Faculty? @relation(fields: [faculty_id], references: [faculty_id], onDelete: NoAction, onUpdate: NoAction)
-  teacher      Teacher? @relation(fields: [teacher_id], references: [teacher_id], onDelete: NoAction, onUpdate: NoAction)
+  faculty      Faculty @relation(fields: [faculty_id], references: [faculty_id], onDelete: NoAction, onUpdate: NoAction)
+  teacher      Teacher @relation(fields: [teacher_id], references: [teacher_id], onDelete: NoAction, onUpdate: NoAction)
 }
 
 model Teacher {
@@ -79,8 +79,8 @@ model Teacher {
   email        String    @unique
   lessons      Lesson[]
   subjects     Subject[]
-  user         User?     @relation(fields: [email], references: [email], onDelete: NoAction, onUpdate: NoAction)
-  faculty      Faculty?  @relation(fields: [faculty_id], references: [faculty_id], onDelete: NoAction, onUpdate: NoAction)
+  user         User     @relation(fields: [email], references: [email], onDelete: NoAction, onUpdate: NoAction)
+  faculty      Faculty  @relation(fields: [faculty_id], references: [faculty_id], onDelete: NoAction, onUpdate: NoAction)
 }
 
 enum UserRole {
