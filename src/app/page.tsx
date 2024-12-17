@@ -132,8 +132,6 @@ export default async function Home(
   const lesson = await getLessonFromParams(searchParams);
   const attendances = await getAttendancesForGroup(lesson?.group_id as string, lesson?.date as Date);
 
-  console.log(attendances);
-
   return (
     <>
       <Header />

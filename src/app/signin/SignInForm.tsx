@@ -34,7 +34,6 @@ export default function SignInForm() {
         password,
         redirect: false,
       })
-      console.log(response);
 
       if (!response?.error) {
         router.push("/");

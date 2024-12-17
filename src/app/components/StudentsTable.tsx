@@ -1,7 +1,7 @@
 "use client";
 
 import { useEffect, useState } from 'react';
-import { $Enums } from "@prisma/client";
+import { $Enums, Lesson } from "@prisma/client";
 import TableCell from "./TableCell";
 import TableHeader from "./TableHeader";
 import Papa from "papaparse";
@@ -62,7 +62,8 @@ export default function StudentsTable({ lesson, attendances, selectedDate, updat
       const attendance = attendanceData?.find(attendance => attendance.lesson.lesson_id === lessonId);
       return attendance ? attendance.lesson : null;
     })
-    .filter(lesson => lesson !== null); // Filter out null values
+    .filter(lesson => lesson !== null) // Filter out null values
+    .sort((a, b) => new Date(a.date).getTime() - new Date(b.date).getTime()); // Sort by date
 
   const header = lesson ? `${lesson.Subject.subject_name} - ${lesson.Group.group_name}` : "Занятие не выбрано";
 
